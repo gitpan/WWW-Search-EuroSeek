@@ -1,7 +1,7 @@
 # EuroSeek.pm
 # by Jim Smyser
 # Copyright (c) 2000 by Jim Smyser 
-# $Id: Euroseek.pm,v 1.2 2000/04/01 01:45:12 jims Exp $
+# $Id: EuroSeek.pm,v 1.3 2000/05/09 01:04:17 jims Exp $
 
 package WWW::Search::EuroSeek;
 
@@ -35,6 +35,13 @@ be done through L<WWW::Search> objects. See SYNOPSIS and OPTIONS
 for usage insight.
 
 =head1 NOTES
+
+printing $result->raw will print raw misc. page data of such things as 
+the Language, Region and date. Example:
+
+Language: english Region:com Sun Feb 20 02:55:44 2000
+
+Print $result->raw after the description for a nice finish if desired.
 
 EuroSeek does not seem to return uniform number of hits per page.
 Seem like only 8 or 9 are returned per page unlike standard 10+.
@@ -167,7 +174,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw();
 @ISA = qw(WWW::Search Exporter);
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 use Carp ();
 use WWW::Search(qw(generic_option strip_tags));
@@ -235,7 +242,7 @@ sub native_retrieve_some
     $self->{'_next_url'} = undef;
     print STDERR "**Found Some\n" if $self->{_debug};
     # parse the output
-    my ($HEADER, $HITS, $DESC, $LOC, $DATE) = qw(HE HI DE LO DA);
+    my ($HEADER, $HITS, $DESC, $MISC, $DATE) = qw(HE HI DE MI DA);
     my $state = $HEADER;
     my $hit = ();
     my $hits_found = 0;
@@ -249,10 +256,10 @@ sub native_retrieve_some
        $state = $HITS;
        } 
    if ($state eq $HITS && 
-       m|<TD COLSPAN.*?><.*?>.*?<A HREF=".*?"><IMG SRC.*?>.*?<A HREF=".*?url=(.*)">(.*)</A>|i) 
+       m|</B><A HREF="http://www.euroseek.com.*?url=(.*)\"\s+.*?">(.*)</A>|i) 
        {
        print STDERR "**Found a URL\n" if 2 <= $self->{_debug};
-	   my ($url,$title) = ($1,$2);
+       my ($url,$title) = ($1,$2);
          if (defined($hit)) 
          {
         push(@{$self->{cache}}, $hit);
@@ -264,23 +271,17 @@ sub native_retrieve_some
        $state = $DESC;
        } 
    elsif ($state eq $DESC && 
-       m|<TD width.*?><FONT FACE.*?>(.*)</FONT></TD>|i) 
+       m|<FONT FACE=.*?>(.*)</FONT>|i) 
        {
        $hit->description($1);
-       $state = $LOC;
+       $state = $MISC;
        } 
-   elsif ($state eq $LOC && 
-       m|<TD ALIGN.*?><.*?>&nbsp;\[\s(.*)\]&nbsp;</FONT><BR>|i) 
+   elsif ($state eq $MISC && 
+       m|(Language:.*)$|i) 
        {
-       $hit->location(strip_tags($1));
-       $state = $DATE;
-       } 
-   elsif ($state eq $DATE && 
-       m|<FONT COLOR.*?>&nbsp;\[\s(.*)$|i) 
-       {
-       $hit->index_date($1);
+       $hit->raw(strip_tags($1));
        $state = $HITS;
-	   }
+       }
    elsif ($state eq $HITS && m|<b><A HREF="(.*)">Next.*?</A>|i) 
        {
        print STDERR "**Found 'next' Tag\n" if 2 <= $self->{_debug};
@@ -301,3 +302,4 @@ sub native_retrieve_some
    } # native_retrieve_some
 
 1;
+

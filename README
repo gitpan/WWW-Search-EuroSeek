@@ -1,7 +1,15 @@
-EuroSeek
-Requires WWW::Search
 
-Backend for searching EuroSeek
+EuroSeek.pm requires WWW::Search.
 
-For a list of current working backends see http://members.xoom.com/backends
+Additional information on using this script and changelog
+may be found in EuroSeek.pm POD doc's or, after installation, view the 
+man pages with man EuroSeek
+
+For instructions on how to install the script, see the
+file INSTALL.
+
+See also http://www.perl.com/CPAN-local/modules/by-module/WWW/
+For latest WWW::Search version and additional documentation.
+
+Auto genereated by makeMOD.pl by Jim Smyser
 
