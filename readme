@@ -1,0 +1,7 @@
+EuroSeek
+Requires WWW::Search
+
+Backend for searching EuroSeek
+
+For a list of current working backends see http://members.xoom.com/backends
+
